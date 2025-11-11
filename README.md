@@ -46,6 +46,22 @@ Then edit `/Users/alimoe/Documents/GitHub/Pips_Projects/.env` with your actual A
    IG_PAGE_ID=your_instagram_business_id
    ```
 
+#### GitHub Token Setup (Required for Instagram)
+Instagram requires a publicly accessible URL for videos. This script uploads videos to your GitHub repository temporarily to get a public URL.
+
+1. Go to [GitHub Settings > Personal Access Tokens](https://github.com/settings/tokens)
+2. Click **"Generate new token (classic)"**
+3. Give it a name like "Pips Projects Instagram Upload"
+4. Select scope: **`repo`** (Full control of private repositories)
+5. Generate and copy the token
+6. Add to `.env`:
+   ```
+   GITHUB_TOKEN=your_github_personal_access_token
+   GITHUB_REPO=moe-a11y/Pips_Projects
+   ```
+
+**Note**: Videos are uploaded to the `instagram_videos/` folder in your repo and remain there for Instagram to access.
+
 #### TikTok API Setup (Optional)
 1. Go to [TikTok Developers](https://developers.tiktok.com/)
 2. Create an app and get access token

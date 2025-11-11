@@ -31,6 +31,8 @@ jobs:
           IG_PAGE_ID: ${{ secrets.IG_PAGE_ID }}
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
           TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
         run: |
           python post_script.py
       - name: Commit and push video deletion
