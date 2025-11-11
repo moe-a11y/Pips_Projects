@@ -3,6 +3,69 @@ import requests, time
 FB_TOKEN = os.environ["FB_ACCESS_TOKEN"]  # long-lived token with IG permissions
 IG_ID = os.environ["IG_PAGE_ID"]  # Instagram Business Account ID
 
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+from oauth2client.client import GoogleCredentials
+
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+
+creds = Credentials.from_authorized_user_info(
+    info={
+      'refresh_token': REFRESH_TOKEN,
+      'client_id': CLIENT_ID,
+      'client_secret': CLIENT_SECRET
+    },
+    scopes=['https://www.googleapis.com/auth/youtube.upload']
+)
+creds.refresh()  # obtain new access token using refresh token
+youtube_service = build('youtube', 'v3', credentials=creds)
+
+
+# Assume credentials are provided via environment (from GH Secrets)
+YT_CLIENT_ID = os.environ["YOUTUBE_API_CLIENT_ID"]
+YT_CLIENT_SECRET = os.environ["YOUTUBE_API_CLIENT_SECRET"]
+YT_REFRESH_TOKEN = os.environ["YOUTUBE_API_REFRESH_TOKEN"]
+
+
+def upload_to_youtube(video_path, title, description):
+    # Authenticate with OAuth 2 using the stored refresh token
+    creds_data = {
+        "client_id": YT_CLIENT_ID,
+        "client_secret": YT_CLIENT_SECRET,
+        "refresh_token": YT_REFRESH_TOKEN,
+        "token_uri": "https://accounts.google.com/o/oauth2/token",
+        "grant_type": "refresh_token",
+    }
+    creds = GoogleCredentials.from_stream(None)  # We'll construct manually
+    creds.client_id = YT_CLIENT_ID
+    creds.client_secret = YT_CLIENT_SECRET
+    creds.refresh_token = YT_REFRESH_TOKEN
+    creds.access_token = None  # force refresh
+    creds.token_uri = "https://accounts.google.com/o/oauth2/token"
+    creds.refresh(None)  # get new access token
+
+    youtube = build("youtube", "v3", credentials=creds)
+    media = MediaFileUpload(video_path, chunksize=-1, resumable=True)
+    request = youtube.videos().insert(
+        part="snippet,status",
+        body={
+            "snippet": {
+                "title": title,
+                "description": description,
+                "categoryId": "24",  # Category 24 = Entertainment (for example)
+                "tags": ["PipsProjects", "Otter", "Magic"],  # add relevant tags
+            },
+            "status": {
+                "privacyStatus": "public",
+                "madeForKids": True,  # mark appropriately
+            },
+        },
+        media_body=media,
+    )
+    response = request.execute()
+    print(f"YouTube upload complete: video ID = {response.get('id')}")
+
 
 def upload_to_instagram(video_path, caption):
     # 1. Upload video file somewhere accessible or get its URL

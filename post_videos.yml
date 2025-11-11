@@ -33,13 +33,17 @@ jobs:
           TIKTOK_ACCESS_TOKEN: ${{ secrets.TIKTOK_ACCESS_TOKEN }}
         run: |
           python post_script.py
-      - name: Commit and push deletion
+      - name: Commit and push video deletion
         if: success()
         run: |
-          # Remove videos to free space
+          # Commit deletion of posted videos (already deleted by post_script.py)
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          rm -rf videos/*
           git add -A
-          git commit -m "Remove posted video"
-          git push
+          # Only commit if there are changes
+          if ! git diff --staged --quiet; then
+            git commit -m "Remove posted video [automated]"
+            git push
+          else
+            echo "No video files to commit (already handled by script)"
+          fi
