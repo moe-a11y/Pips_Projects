@@ -62,6 +62,25 @@ Instagram requires a publicly accessible URL for videos. This script uploads vid
 
 **Note**: Videos are uploaded to the `instagram_videos/` folder in your repo and remain there for Instagram to access.
 
+#### Imgur Setup (Recommended for Instagram)
+Imgur is more reliable than GitHub for Instagram video hosting. Instagram's servers can reliably download from Imgur.
+
+1. Go to [Imgur API](https://api.imgur.com/oauth2/addclient)
+2. Sign in or create an Imgur account
+3. Register an application:
+   - **Application name**: Pip's Projects
+   - **Authorization type**: Select **"OAuth 2 authorization without a callback URL"**
+   - **Email**: Your email
+   - **Description**: Video hosting for Instagram
+4. Click **Submit**
+5. Copy your **Client ID** (not the Client Secret)
+6. Add to `.env`:
+   ```
+   IMGUR_CLIENT_ID=your_imgur_client_id
+   ```
+
+**Note**: The script will try Imgur first (if configured), then fallback to GitHub if needed.
+
 #### TikTok API Setup (Optional)
 1. Go to [TikTok Developers](https://developers.tiktok.com/)
 2. Create an app and get access token
