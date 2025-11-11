@@ -150,16 +150,19 @@ def upload_to_instagram(video_path, caption):
     for attempt in range(max_retries):
         time.sleep(10)  # Wait 10 seconds between checks
         status_url = f"https://graph.facebook.com/v17.0/{container_id}"
-        status_res = requests.get(status_url, params={"fields": "status_code", "access_token": FB_TOKEN})
+        status_res = requests.get(status_url, params={"fields": "status_code,status", "access_token": FB_TOKEN})
         status_data = status_res.json()
 
         status_code = status_data.get("status_code")
-        print(f"IG processing status (attempt {attempt + 1}/{max_retries}): {status_code}")
+        status_msg = status_data.get("status", "No status message")
+        print(f"IG processing status (attempt {attempt + 1}/{max_retries}): {status_code} - {status_msg}")
 
         if status_code == "FINISHED":
             break
         elif status_code == "ERROR":
-            raise Exception(f"IG video processing failed: {status_data}")
+            # Get more detailed error information
+            error_msg = status_data.get("status", "Unknown error")
+            raise Exception(f"IG video processing failed. Status: {status_code}, Message: {error_msg}, Full response: {status_data}")
     else:
         raise Exception("IG video processing timeout - took too long")
 
