@@ -22,6 +22,58 @@ FB_PAGE_ID = os.getenv("FB_PAGE_ID")
 TIKTOK_TOKEN = os.getenv("TIKTOK_ACCESS_TOKEN")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_REPO = os.getenv("GITHUB_REPO", "moe-a11y/Pips_Projects")  # Default repo
+IMGUR_CLIENT_ID = os.getenv("IMGUR_CLIENT_ID")  # For Instagram video hosting
+
+
+def upload_to_imgur(video_path):
+    """
+    Upload video to Imgur and return the public URL.
+    Imgur is more reliable for Instagram downloads than GitHub raw URLs.
+    
+    Args:
+        video_path: Local path to the video file
+        
+    Returns:
+        str: Imgur URL to access the video
+    """
+    if not IMGUR_CLIENT_ID:
+        raise Exception("Imgur client ID not configured")
+    
+    # Read video file
+    with open(video_path, 'rb') as video_file:
+        video_content = video_file.read()
+    
+    # Imgur API endpoint
+    url = "https://api.imgur.com/3/upload"
+    
+    # Prepare headers
+    headers = {
+        "Authorization": f"Client-ID {IMGUR_CLIENT_ID}"
+    }
+    
+    # Prepare payload
+    payload = {
+        'video': base64.b64encode(video_content).decode('utf-8'),
+        'type': 'base64',
+        'title': 'Pip Instagram Video'
+    }
+    
+    # Upload to Imgur
+    response = requests.post(url, headers=headers, data=payload)
+    
+    if response.status_code != 200:
+        raise Exception(f"Imgur upload failed: {response.text}")
+    
+    response_data = response.json()
+    
+    if not response_data.get('success'):
+        raise Exception(f"Imgur upload failed: {response_data}")
+    
+    # Get the video URL
+    video_url = response_data['data']['link']
+    
+    print(f"Video uploaded to Imgur: {video_url}")
+    return video_url
 
 
 def upload_to_github_raw(video_path):
@@ -124,11 +176,19 @@ def upload_to_instagram(video_path, caption):
     if not all([FB_TOKEN, IG_ID]):
         raise Exception("Instagram credentials not configured")
 
-    if not GITHUB_TOKEN:
-        raise Exception("GitHub token required for Instagram uploads (to host video)")
-
-    # 1. Upload video to GitHub to get a publicly accessible URL
-    video_url = upload_to_github_raw(video_path)
+    # Try Imgur first (more reliable), fallback to GitHub if Imgur not configured
+    try:
+        if IMGUR_CLIENT_ID:
+            print("Using Imgur for Instagram video hosting...")
+            video_url = upload_to_imgur(video_path)
+        elif GITHUB_TOKEN:
+            print("Using GitHub for Instagram video hosting (Imgur not configured)...")
+            video_url = upload_to_github_raw(video_path)
+        else:
+            raise Exception("Neither Imgur nor GitHub token configured for Instagram video hosting")
+    except Exception as e:
+        print(f"Video hosting upload error: {e}")
+        raise
 
     # 2. Create IG media container
     create_url = f"https://graph.facebook.com/v17.0/{IG_ID}/media"
