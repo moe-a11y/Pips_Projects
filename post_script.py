@@ -3,10 +3,14 @@ from pathlib import Path
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env file (if available, for local testing)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # dotenv not available (e.g., in GitHub Actions), env vars already set
+    pass
 
 # Get credentials from environment
 YT_CLIENT_ID = os.getenv("YOUTUBE_API_CLIENT_ID")
