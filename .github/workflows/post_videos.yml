@@ -37,10 +37,16 @@ jobs:
           python post_script.py
       - name: Commit and push video deletion
         if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           # Commit deletion of posted videos (already deleted by post_script.py)
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
+
+          # Configure Git to use the token for authentication
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+
           git add -A
           # Only commit if there are changes
           if ! git diff --staged --quiet; then
