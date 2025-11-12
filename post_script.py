@@ -1,5 +1,6 @@
-import glob, os, time, requests, base64
+import base64, glob, os, requests, time
 from pathlib import Path
+
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
@@ -7,6 +8,7 @@ from googleapiclient.http import MediaFileUpload
 # Load environment variables from .env file (if available, for local testing)
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     # dotenv not available (e.g., in GitHub Actions), env vars already set
@@ -38,11 +40,11 @@ def upload_to_github_raw(video_path):
         raise Exception("GitHub token not configured")
 
     # Read video file and encode to base64
-    with open(video_path, 'rb') as video_file:
+    with open(video_path, "rb") as video_file:
         video_content = video_file.read()
 
     # Encode to base64 for GitHub API
-    encoded_content = base64.b64encode(video_content).decode('utf-8')
+    encoded_content = base64.b64encode(video_content).decode("utf-8")
 
     # Generate unique filename based on original name
     video_filename = Path(video_path).name
@@ -55,13 +57,13 @@ def upload_to_github_raw(video_path):
     commit_data = {
         "message": f"Upload video for Instagram posting: {video_filename}",
         "content": encoded_content,
-        "branch": "main"
+        "branch": "main",
     }
 
     # Add headers with authentication
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
+        "Accept": "application/vnd.github.v3+json",
     }
 
     # Check if file already exists (to update instead of create)
@@ -90,14 +92,14 @@ def upload_to_youtube(video_path, title, description):
 
     creds = Credentials.from_authorized_user_info(
         info={
-            'refresh_token': YT_REFRESH_TOKEN,
-            'client_id': YT_CLIENT_ID,
-            'client_secret': YT_CLIENT_SECRET
+            "refresh_token": YT_REFRESH_TOKEN,
+            "client_id": YT_CLIENT_ID,
+            "client_secret": YT_CLIENT_SECRET,
         },
-        scopes=['https://www.googleapis.com/auth/youtube.upload']
+        scopes=["https://www.googleapis.com/auth/youtube.upload"],
     )
 
-    youtube = build('youtube', 'v3', credentials=creds)
+    youtube = build("youtube", "v3", credentials=creds)
     media = MediaFileUpload(video_path, chunksize=-1, resumable=True)
     request = youtube.videos().insert(
         part="snippet,status",
@@ -150,19 +152,26 @@ def upload_to_instagram(video_path, caption):
     for attempt in range(max_retries):
         time.sleep(10)  # Wait 10 seconds between checks
         status_url = f"https://graph.facebook.com/v17.0/{container_id}"
-        status_res = requests.get(status_url, params={"fields": "status_code,status", "access_token": FB_TOKEN})
+        status_res = requests.get(
+            status_url,
+            params={"fields": "status_code,status", "access_token": FB_TOKEN},
+        )
         status_data = status_res.json()
 
         status_code = status_data.get("status_code")
         status_msg = status_data.get("status", "No status message")
-        print(f"IG processing status (attempt {attempt + 1}/{max_retries}): {status_code} - {status_msg}")
+        print(
+            f"IG processing status (attempt {attempt + 1}/{max_retries}): {status_code} - {status_msg}"
+        )
 
         if status_code == "FINISHED":
             break
         elif status_code == "ERROR":
             # Get more detailed error information
             error_msg = status_data.get("status", "Unknown error")
-            raise Exception(f"IG video processing failed. Status: {status_code}, Message: {error_msg}, Full response: {status_data}")
+            raise Exception(
+                f"IG video processing failed. Status: {status_code}, Message: {error_msg}, Full response: {status_data}"
+            )
     else:
         raise Exception("IG video processing timeout - took too long")
 
@@ -290,6 +299,15 @@ def main():
             if desc_file.exists():
                 os.remove(desc_file)
                 print(f"✓ Successfully deleted description file: {desc_file}")
+
+            # Delete the video from instagram_videos folder if it exists
+            video_filename = Path(video_path).name
+            instagram_video_path = Path(f"instagram_videos/{video_filename}")
+            if instagram_video_path.exists():
+                os.remove(instagram_video_path)
+                print(
+                    f"✓ Successfully deleted Instagram video file: {instagram_video_path}"
+                )
         except Exception as e:
             print(f"✗ Failed to delete video file: {e}")
     else:
