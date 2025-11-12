@@ -50,7 +50,7 @@ jobs:
           git add -A
           # Only commit if there are changes
           if ! git diff --staged --quiet; then
-            git commit -m "Remove posted video [automated]"
+            git commit -m "Remove posted videos from videos/ and instagram_videos/ [automated]"
 
             # Pull any remote changes before pushing to avoid conflicts
             git pull --rebase origin main || echo "No remote changes to pull"
