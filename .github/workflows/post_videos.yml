@@ -51,6 +51,11 @@ jobs:
           # Only commit if there are changes
           if ! git diff --staged --quiet; then
             git commit -m "Remove posted video [automated]"
+
+            # Pull any remote changes before pushing to avoid conflicts
+            git pull --rebase origin main || echo "No remote changes to pull"
+
+            # Push the changes
             git push
           else
             echo "No video files to commit (already handled by script)"
