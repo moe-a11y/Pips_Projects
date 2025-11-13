@@ -78,6 +78,61 @@ def delete_video_info_for_video(video_filename):
         print(f"ℹ️  No video info entry found for {video_filename} in video_info.json")
 
 
+def delete_from_github(video_filename):
+    """
+    Delete a video file from GitHub repository's instagram_videos folder.
+
+    Args:
+        video_filename: Name of the video file to delete from GitHub
+
+    Returns:
+        bool: True if deleted successfully, False otherwise
+    """
+    if not GITHUB_TOKEN:
+        print("⚠️  GitHub token not configured, skipping GitHub deletion")
+        return False
+
+    github_path = f"instagram_videos/{video_filename}"
+    api_url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{github_path}"
+
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json",
+    }
+
+    # First, get the file's SHA (required for deletion)
+    try:
+        check_response = requests.get(api_url, headers=headers)
+        if check_response.status_code == 404:
+            print(f"ℹ️  Video {video_filename} not found in GitHub repo, may have been already deleted")
+            return True  # Consider this a success since file doesn't exist
+        elif check_response.status_code != 200:
+            print(f"⚠️  Failed to check if video exists in GitHub: {check_response.text}")
+            return False
+
+        file_sha = check_response.json()["sha"]
+
+        # Now delete the file
+        delete_data = {
+            "message": f"Delete posted video: {video_filename} [automated]",
+            "sha": file_sha,
+            "branch": "main",
+        }
+
+        delete_response = requests.delete(api_url, headers=headers, json=delete_data)
+
+        if delete_response.status_code == 200:
+            print(f"✓ Successfully deleted {video_filename} from GitHub repository")
+            return True
+        else:
+            print(f"⚠️  Failed to delete video from GitHub: {delete_response.text}")
+            return False
+
+    except Exception as e:
+        print(f"⚠️  Error deleting video from GitHub: {e}")
+        return False
+
+
 def upload_to_github_raw(video_path):
     """
     Upload video to GitHub repository and return the raw URL.
@@ -363,10 +418,11 @@ def main():
         except Exception as e:
             print(f"TikTok upload failed or not configured: {e}")
 
-    # 7. Delete video file and caption after successful upload
+    # 7. Delete video file and video info after successful upload
     # This works both locally and in GitHub Actions
     if upload_success:
         try:
+            # Delete the local video file from videos/ folder
             os.remove(video_path)
             print(f"✓ Successfully deleted video file: {video_path}")
 
@@ -379,13 +435,18 @@ def main():
                 os.remove(desc_file)
                 print(f"✓ Successfully deleted description file: {desc_file}")
 
-            # Delete the video from instagram_videos folder if it exists
+            # Delete the video from local instagram_videos folder if it exists
             instagram_video_path = Path(f"instagram_videos/{video_filename}")
             if instagram_video_path.exists():
                 os.remove(instagram_video_path)
                 print(
-                    f"✓ Successfully deleted Instagram video file: {instagram_video_path}"
+                    f"✓ Successfully deleted local Instagram video file: {instagram_video_path}"
                 )
+            
+            # Delete the video from GitHub repository's instagram_videos folder
+            # This is important for GitHub Actions where the video is uploaded to GitHub
+            delete_from_github(video_filename)
+            
         except Exception as e:
             print(f"✗ Failed to delete video file: {e}")
     else:
