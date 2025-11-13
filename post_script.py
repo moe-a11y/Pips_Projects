@@ -104,10 +104,14 @@ def delete_from_github(video_filename):
     try:
         check_response = requests.get(api_url, headers=headers)
         if check_response.status_code == 404:
-            print(f"ℹ️  Video {video_filename} not found in GitHub repo, may have been already deleted")
+            print(
+                f"ℹ️  Video {video_filename} not found in GitHub repo, may have been already deleted"
+            )
             return True  # Consider this a success since file doesn't exist
         elif check_response.status_code != 200:
-            print(f"⚠️  Failed to check if video exists in GitHub: {check_response.text}")
+            print(
+                f"⚠️  Failed to check if video exists in GitHub: {check_response.text}"
+            )
             return False
 
         file_sha = check_response.json()["sha"]
@@ -442,11 +446,11 @@ def main():
                 print(
                     f"✓ Successfully deleted local Instagram video file: {instagram_video_path}"
                 )
-            
+
             # Delete the video from GitHub repository's instagram_videos folder
             # This is important for GitHub Actions where the video is uploaded to GitHub
             delete_from_github(video_filename)
-            
+
         except Exception as e:
             print(f"✗ Failed to delete video file: {e}")
     else:
