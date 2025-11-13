@@ -26,56 +26,56 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_REPO = os.getenv("GITHUB_REPO", "moe-a11y/Pips_Projects")  # Default repo
 
 
-def load_captions():
+def load_video_info():
     """
-    Load captions from captions.json file.
+    Load video information (titles and descriptions) from video_info.json file.
 
     Returns:
-        dict: Dictionary mapping video filenames to their caption data
+        dict: Dictionary mapping video filenames to their info
               Format: {"video.mp4": {"title": "...", "description": "..."}}
     """
-    captions_file = Path("captions.json")
-    if not captions_file.exists():
-        print("⚠️  No captions.json file found. Creating empty one.")
-        with open(captions_file, "w") as f:
+    video_info_file = Path("video_info.json")
+    if not video_info_file.exists():
+        print("⚠️  No video_info.json file found. Creating empty one.")
+        with open(video_info_file, "w") as f:
             json.dump({}, f, indent=2)
         return {}
 
     try:
-        with open(captions_file, "r") as f:
+        with open(video_info_file, "r") as f:
             return json.load(f)
     except json.JSONDecodeError as e:
-        print(f"❌ Error parsing captions.json: {e}")
+        print(f"❌ Error parsing video_info.json: {e}")
         return {}
 
 
-def save_captions(captions_data):
+def save_video_info(video_info_data):
     """
-    Save captions back to captions.json file.
+    Save video information back to video_info.json file.
 
     Args:
-        captions_data: Dictionary of captions to save
+        video_info_data: Dictionary of video info to save
     """
-    captions_file = Path("captions.json")
-    with open(captions_file, "w") as f:
-        json.dump(captions_data, f, indent=2)
-    print(f"✓ Updated captions.json")
+    video_info_file = Path("video_info.json")
+    with open(video_info_file, "w") as f:
+        json.dump(video_info_data, f, indent=2)
+    print(f"✓ Updated video_info.json")
 
 
-def delete_caption_for_video(video_filename):
+def delete_video_info_for_video(video_filename):
     """
-    Delete caption entry for a specific video from captions.json.
+    Delete video info entry for a specific video from video_info.json.
 
     Args:
-        video_filename: Name of the video file to remove caption for
+        video_filename: Name of the video file to remove info for
     """
-    captions = load_captions()
-    if video_filename in captions:
-        del captions[video_filename]
-        save_captions(captions)
-        print(f"✓ Deleted caption for {video_filename} from captions.json")
+    video_info = load_video_info()
+    if video_filename in video_info:
+        del video_info[video_filename]
+        save_video_info(video_info)
+        print(f"✓ Deleted video info for {video_filename} from video_info.json")
     else:
-        print(f"ℹ️  No caption entry found for {video_filename} in captions.json")
+        print(f"ℹ️  No video info entry found for {video_filename} in video_info.json")
 
 
 def upload_to_github_raw(video_path):
@@ -285,22 +285,22 @@ def main():
     video_filename = Path(video_path).name
     print(f"Found video file: {video_path}")
 
-    # 2. Load captions from captions.json
-    captions_data = load_captions()
+    # 2. Load video info (title & description) from video_info.json
+    video_info_data = load_video_info()
 
-    # Check if this video has a caption entry
-    if video_filename in captions_data:
-        caption_info = captions_data[video_filename]
-        title = caption_info.get("title", "Pip's New Adventure")
-        description = caption_info.get(
+    # Check if this video has an info entry
+    if video_filename in video_info_data:
+        video_info = video_info_data[video_filename]
+        title = video_info.get("title", "Pip's New Adventure")
+        description = video_info.get(
             "description",
             "Pip tries something magical in his workshop! #PipsProjects #Otter",
         )
-        print(f"✓ Found caption in captions.json for {video_filename}")
+        print(f"✓ Found video info in video_info.json for {video_filename}")
     else:
-        # Fallback to .txt file if no caption in JSON
+        # Fallback to .txt file if no info in JSON
         print(
-            f"⚠️  No caption found in captions.json for {video_filename}, checking for .txt file..."
+            f"⚠️  No video info found in video_info.json for {video_filename}, checking for .txt file..."
         )
         title = "Pip's New Adventure"
         description = (
@@ -321,7 +321,7 @@ def main():
                 description = content
             print(f"✓ Using description from {desc_file}")
         else:
-            print(f"⚠️  No .txt file found either, using default caption")
+            print(f"⚠️  No .txt file found either, using default description")
 
     print(f"Using title: {title}")
     print(f"Description/Caption: {description}")
@@ -370,8 +370,8 @@ def main():
             os.remove(video_path)
             print(f"✓ Successfully deleted video file: {video_path}")
 
-            # Delete the caption entry from captions.json
-            delete_caption_for_video(video_filename)
+            # Delete the video info entry from video_info.json
+            delete_video_info_for_video(video_filename)
 
             # Also delete the description .txt file if it exists (legacy support)
             desc_file = Path(video_path).with_suffix(".txt")
