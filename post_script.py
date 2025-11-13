@@ -1,4 +1,4 @@
-import base64, glob, os, requests, time
+import base64, glob, json, os, requests, time
 from pathlib import Path
 
 from google.oauth2.credentials import Credentials
@@ -24,6 +24,58 @@ FB_PAGE_ID = os.getenv("FB_PAGE_ID")
 TIKTOK_TOKEN = os.getenv("TIKTOK_ACCESS_TOKEN")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_REPO = os.getenv("GITHUB_REPO", "moe-a11y/Pips_Projects")  # Default repo
+
+
+def load_captions():
+    """
+    Load captions from captions.json file.
+
+    Returns:
+        dict: Dictionary mapping video filenames to their caption data
+              Format: {"video.mp4": {"title": "...", "description": "..."}}
+    """
+    captions_file = Path("captions.json")
+    if not captions_file.exists():
+        print("⚠️  No captions.json file found. Creating empty one.")
+        with open(captions_file, "w") as f:
+            json.dump({}, f, indent=2)
+        return {}
+
+    try:
+        with open(captions_file, "r") as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        print(f"❌ Error parsing captions.json: {e}")
+        return {}
+
+
+def save_captions(captions_data):
+    """
+    Save captions back to captions.json file.
+
+    Args:
+        captions_data: Dictionary of captions to save
+    """
+    captions_file = Path("captions.json")
+    with open(captions_file, "w") as f:
+        json.dump(captions_data, f, indent=2)
+    print(f"✓ Updated captions.json")
+
+
+def delete_caption_for_video(video_filename):
+    """
+    Delete caption entry for a specific video from captions.json.
+
+    Args:
+        video_filename: Name of the video file to remove caption for
+    """
+    captions = load_captions()
+    if video_filename in captions:
+        del captions[video_filename]
+        save_captions(captions)
+        print(f"✓ Deleted caption for {video_filename} from captions.json")
+    else:
+        print(f"ℹ️  No caption entry found for {video_filename} in captions.json")
 
 
 def upload_to_github_raw(video_path):
@@ -230,24 +282,47 @@ def main():
         print("No video file found in the videos/ folder. Exiting without posting.")
         return
     video_path = video_files[0]
+    video_filename = Path(video_path).name
     print(f"Found video file: {video_path}")
 
-    # 2. Prepare title and description for the post
-    # For simplicity, derive them from the file name or a companion text file.
-    # E.g., assume filename like "pip_magical_bubbles.mp4" and maybe a .txt with description.
-    title = "Pip's New Adventure"
-    description = "Pip tries something magical in his workshop! #PipsProjects #Otter"  # Default fallback
+    # 2. Load captions from captions.json
+    captions_data = load_captions()
 
-    desc_file = Path(video_path).with_suffix(".txt")
-    if desc_file.exists():
-        # If a description file is provided alongside the video, use it
-        description = desc_file.read_text().strip()
-        # Optionally split a first line as title
-        if "\n" in description:
-            title_line, desc_text = description.split("\n", 1)
-            if len(title_line) < 80:
-                title = title_line
-                description = desc_text.strip()
+    # Check if this video has a caption entry
+    if video_filename in captions_data:
+        caption_info = captions_data[video_filename]
+        title = caption_info.get("title", "Pip's New Adventure")
+        description = caption_info.get(
+            "description",
+            "Pip tries something magical in his workshop! #PipsProjects #Otter",
+        )
+        print(f"✓ Found caption in captions.json for {video_filename}")
+    else:
+        # Fallback to .txt file if no caption in JSON
+        print(
+            f"⚠️  No caption found in captions.json for {video_filename}, checking for .txt file..."
+        )
+        title = "Pip's New Adventure"
+        description = (
+            "Pip tries something magical in his workshop! #PipsProjects #Otter"
+        )
+
+        desc_file = Path(video_path).with_suffix(".txt")
+        if desc_file.exists():
+            # If a description file is provided alongside the video, use it
+            content = desc_file.read_text().strip()
+            # Optionally split a first line as title
+            if "\n" in content:
+                title_line, desc_text = content.split("\n", 1)
+                if len(title_line) < 80:
+                    title = title_line
+                    description = desc_text.strip()
+            else:
+                description = content
+            print(f"✓ Using description from {desc_file}")
+        else:
+            print(f"⚠️  No .txt file found either, using default caption")
+
     print(f"Using title: {title}")
     print(f"Description/Caption: {description}")
 
@@ -288,20 +363,23 @@ def main():
         except Exception as e:
             print(f"TikTok upload failed or not configured: {e}")
 
-    # 7. Delete video file after successful upload
+    # 7. Delete video file and caption after successful upload
     # This works both locally and in GitHub Actions
     if upload_success:
         try:
             os.remove(video_path)
             print(f"✓ Successfully deleted video file: {video_path}")
 
-            # Also delete the description file if it exists
+            # Delete the caption entry from captions.json
+            delete_caption_for_video(video_filename)
+
+            # Also delete the description .txt file if it exists (legacy support)
+            desc_file = Path(video_path).with_suffix(".txt")
             if desc_file.exists():
                 os.remove(desc_file)
                 print(f"✓ Successfully deleted description file: {desc_file}")
 
             # Delete the video from instagram_videos folder if it exists
-            video_filename = Path(video_path).name
             instagram_video_path = Path(f"instagram_videos/{video_filename}")
             if instagram_video_path.exists():
                 os.remove(instagram_video_path)
