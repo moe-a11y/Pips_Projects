@@ -89,14 +89,40 @@ Imgur is more reliable than GitHub for Instagram video hosting. Instagram's serv
    TIKTOK_ACCESS_TOKEN=your_tiktok_token
    ```
 
-### 3. Add Videos
+### 3. Add Videos and Captions
 
-Place your video files in the `videos/` folder. Optionally, create a `.txt` file with the same name as your video for custom title/description:
+Place your video files in the `videos/` folder and add their captions to `captions.json`:
+
+#### Using captions.json (Recommended)
+
+Edit `captions.json` to add captions for your videos:
+
+```json
+{
+  "my_video.mp4": {
+    "title": "Pip's Magical Workshop Adventure",
+    "description": "Watch Pip create magical bubbles in his workshop! 🦦✨ #PipsProjects #Otter #MagicalMoments #OtterLife"
+  },
+  "another_video.mp4": {
+    "title": "Pip Explores the Garden",
+    "description": "Join Pip on a garden adventure! 🌸🦦 #PipsProjects #Otter #Nature"
+  }
+}
+```
+
+The format is:
+- **Key**: Exact filename of your video (must match exactly)
+- **title**: Video title (used for YouTube, under 80 characters recommended)
+- **description**: Caption/description with hashtags (used for all platforms)
+
+#### Using .txt files (Legacy, still supported)
+
+Alternatively, create a `.txt` file with the same name as your video:
 
 ```
 videos/
   my_video.mp4
-  my_video.txt  (optional)
+  my_video.txt  (optional, if not in captions.json)
 ```
 
 Format of `.txt` file:
@@ -104,6 +130,8 @@ Format of `.txt` file:
 Title of the Video (first line, under 80 characters)
 Description of the video with hashtags #PipsProjects #Otter
 ```
+
+**Note**: The script will prioritize `captions.json` over `.txt` files. If neither exists, it will use default captions.
 
 ## Usage
 
