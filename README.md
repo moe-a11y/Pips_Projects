@@ -89,13 +89,13 @@ Imgur is more reliable than GitHub for Instagram video hosting. Instagram's serv
    TIKTOK_ACCESS_TOKEN=your_tiktok_token
    ```
 
-### 3. Add Videos and Captions
+### 3. Add Videos and Descriptions
 
-Place your video files in the `videos/` folder and add their captions to `captions.json`:
+Place your video files in the `videos/` folder and add their post descriptions/bios to `video_info.json`:
 
-#### Using captions.json (Recommended)
+#### Using video_info.json (Recommended)
 
-Edit `captions.json` to add captions for your videos:
+Edit `video_info.json` to add titles and descriptions for your videos:
 
 ```json
 {
@@ -112,8 +112,14 @@ Edit `captions.json` to add captions for your videos:
 
 The format is:
 - **Key**: Exact filename of your video (must match exactly)
-- **title**: Video title (used for YouTube, under 80 characters recommended)
-- **description**: Caption/description with hashtags (used for all platforms)
+- **title**: Video title (used for YouTube video title, under 80 characters recommended)
+- **description**: Post description/bio with hashtags (used as the post text for YouTube, Instagram, Facebook, and TikTok)
+
+**What goes where:**
+- **YouTube**: Uses `title` as video title, `description` as video description
+- **Instagram**: Uses `description` as the Reel caption/bio
+- **Facebook**: Uses `description` as the post description
+- **TikTok**: Uses `description` as the post description
 
 #### Using .txt files (Legacy, still supported)
 
@@ -122,7 +128,7 @@ Alternatively, create a `.txt` file with the same name as your video:
 ```
 videos/
   my_video.mp4
-  my_video.txt  (optional, if not in captions.json)
+  my_video.txt  (optional, if not in video_info.json)
 ```
 
 Format of `.txt` file:
@@ -131,7 +137,7 @@ Title of the Video (first line, under 80 characters)
 Description of the video with hashtags #PipsProjects #Otter
 ```
 
-**Note**: The script will prioritize `captions.json` over `.txt` files. If neither exists, it will use default captions.
+**Note**: The script will prioritize `video_info.json` over `.txt` files. If neither exists, it will use default descriptions.
 
 ## Usage
 
