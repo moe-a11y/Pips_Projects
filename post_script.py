@@ -232,13 +232,16 @@ def upload_to_youtube(video_path, title, description):
     print(f"YouTube upload complete: video ID = {response.get('id')}")
 
 
-def upload_to_instagram(video_path, caption):
+def upload_to_instagram(video_path, title, description):
     """Upload video to Instagram as a Reel."""
     if not all([FB_TOKEN, IG_ID]):
         raise Exception("Instagram credentials not configured")
 
     if not GITHUB_TOKEN:
         raise Exception("GitHub token required for Instagram uploads (to host video)")
+
+    # Combine title and description for Instagram caption
+    caption = f"{title}\n{description}"
 
     # 1. Upload video to GitHub to get a publicly accessible URL
     video_url = upload_to_github_raw(video_path)
@@ -298,7 +301,7 @@ def upload_to_instagram(video_path, caption):
         raise Exception(f"IG publish failed: {res2_data}")
 
 
-def upload_to_facebook(video_path, description):
+def upload_to_facebook(video_path, title, description):
     """Upload video to Facebook page."""
     if not all([FB_TOKEN, FB_PAGE_ID]):
         raise Exception("Facebook credentials not configured")
@@ -307,7 +310,7 @@ def upload_to_facebook(video_path, description):
     fb_url = f"https://graph.facebook.com/v17.0/{FB_PAGE_ID}/videos"
     res = requests.post(
         fb_url,
-        data={"description": description, "access_token": FB_TOKEN},
+        data={"title": title, "description": description, "access_token": FB_TOKEN},
         files={"source": video_file},
     )
     res_data = res.json()
@@ -350,12 +353,15 @@ def main():
     # Check if this video has an info entry
     if video_filename in video_info_data:
         video_info = video_info_data[video_filename]
+        # Get title from JSON, use default if not present
         title = video_info.get("title", "Pip's New Adventure")
         description = video_info.get(
             "description",
             "Pip tries something magical in his workshop! #PipsProjects #Otter",
         )
         print(f"✓ Found video info in video_info.json for {video_filename}")
+        if "title" not in video_info:
+            print(f"  ℹ️  No 'title' field found in JSON, using default title: {title}")
     else:
         # Fallback to .txt file if no info in JSON
         print(
@@ -398,7 +404,7 @@ def main():
 
     # 4. Post to Instagram
     try:
-        upload_to_instagram(video_path, description)
+        upload_to_instagram(video_path, title, description)
         upload_success = True
         print("Instagram upload succeeded.")
     except Exception as e:
@@ -406,7 +412,7 @@ def main():
 
     # 5. Post to Facebook
     try:
-        upload_to_facebook(video_path, description)
+        upload_to_facebook(video_path, title, description)
         upload_success = True
         print("Facebook upload succeeded.")
     except Exception as e:
