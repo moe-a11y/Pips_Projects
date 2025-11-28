@@ -1,1 +1,50 @@
-{}
+{
+  "curl.mp4": {
+    "description": "Pip discovers a magical steam loom that knits glowing cozywear out of warm mist—resulting in the cutest floating scarf attack ever. ☁️🧶✨ #PipsProjects #CuteOtter #CozyMagic #WhimsicalWorkshop #SteamCraft #OtterInventor",
+    "title": "Pip and the Cozy Curl Steam Loom ☁️🧶✨"
+  },
+  "echoink.mp4": {
+    "description": "Pip discovers a sound reactive ink board that turns his squeaks into shimmering floating artwork—and gets adorably booped by living paint. 🎨✨ #PipsProjects #CuteOtter #EchoInk #MagicWorkshop #WhimsicalScience #OtterInventor",
+    "title": "Pip and the Echo Ink Ripple Board 🎨🔊✨"
+  },
+  "frost.mp4": {
+    "description": "Made a teeny tiny magical blizzard today! I got snowed on!!! ❄️🌀✨ #PipsProjects #MagicWorkshop #CuteOtter #WinterWhimsy",
+    "title": "The Frost Whirl Mini Blizzard Cone ❄️🌀✨"
+  },
+  "sunbeam.mp4": {
+    "description": "I caught sunbeams today!! They were warm and tickly and VERY sparkly!! ☀️✨ #PipsProjects #SunMagic #CuteOtter",
+    "title": "The Sunbeam Pinwheel Collector"
+  },
+  "bubble.mp4": {
+    "description": "Today in the lab I found a drum that makes musical bubbles! One of them booped me!! 🫧🎶 #PipsProjects #CuteOtter #BubbleBeat #WhimsyScience",
+    "title": "The Bubble Beat Pulse Drum"
+  },
+  "glowmap.mp4": {
+    "description": "Pip tests a magical compass that draws glowing paths in midair—and ends up chasing a sparkling trail full of surprises. ✨🧭 #PipsProjects #CuteOtter #MagicCompass #WhimsicalScience #AIAnimation #OtterInventor",
+    "title": "Pip and the Glow Map Compass ✨🧭"
+  },
+  "jar.mp4": {
+    "description": "Pip tests a jar that releases playful mini whirlwinds—and gets caught in the sparkly breeze himself. ✨🌪️ #PipsProjects #CuteOtter #MagicWorkshop #WhimsyScience #SparkleStorm #OtterInventor",
+    "title": "Pip and the Whirlwind Wish Jar ✨🌪️"
+  },
+  "lantern.mp4": {
+    "description": "Pip discovers a lantern that transforms his emotions into living mosaics of light—and it turns his workshop into a glowing mood show. ✨🪄 #PipsProjects #CuteOtter #MoodMagic #WhimsicalWorkshop #AIAnimation #OtterInventor",
+    "title": "Pip and the Mood Mosaic Lantern ✨🪄"
+  },
+  "meme.mp4": {
+    "description": "Tried out a magical wiggle lens today… I didnt know my FACE could do that!!! 😂✨ #PipsProjects #CuteOtter #WiggleLens #WhimsyScience",
+    "title": "The Meme Morph Wiggle Lens"
+  },
+  "orb.mp4": {
+    "description": "Pip tests a hovering orb that draws glowing doodles in midair—until the doodles start booping him back. ✨🖊️🌬️ #PipsProjects #CuteOtter #MagicWorkshop #AirDoodles #WhimsicalScience #OtterInventor",
+    "title": "Pip and the Drift Glow Doodle Orb ✨🖊️🌬️"
+  },
+  "solar.mp4": {
+    "title": "Pip and the Solar Spark Seed Spinner ☀️🌀🌱",
+    "description": "Pip experiments with a solar charged seed that sprouts glowing mini plants—and ends up dusted in sunlit sparkles. ☀️🌱✨ #PipsProjects #CuteOtter #SolarMagic #WhimsicalWorkshop #ScienceMagic #OtterInventor"
+  },
+  "brush.mp4": {
+    "description": "Painting the air is SO FUN!! The brush painted ME too!! 🌈✨ #PipsProjects #CuteOtter #AirArt #MagicWorkshop",
+    "title": "The Color Puff Mood Brush"
+  }
+}
