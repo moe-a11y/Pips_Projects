@@ -2,6 +2,9 @@
 """
 Helper script to generate a YouTube OAuth refresh token.
 
+⚠️  LOCAL USE ONLY - This script must NEVER run in CI/cron environments!
+    It requires interactive browser-based OAuth consent.
+
 This script will:
 1. Open a browser for you to authorize the app
 2. Exchange the authorization code for a refresh token
@@ -15,11 +18,22 @@ Prerequisites:
 import http.server
 import os
 import socketserver
+import sys
 import webbrowser
 from threading import Thread
 from urllib.parse import parse_qs, urlencode
 
 import requests
+
+# ============================================================
+# CI/CRON GUARD: This script must NEVER run in automated environments
+# ============================================================
+if os.getenv("CI") or os.getenv("GITHUB_ACTIONS") or os.getenv("CRON"):
+    print("❌ ERROR: get_youtube_token.py cannot run in CI/cron environments!")
+    print("   This script requires interactive browser-based OAuth consent.")
+    print("   In CI/cron, use refresh_token → access_token flow only.")
+    print("   If refresh fails in CI, the job should hard-fail and alert.")
+    sys.exit(1)
 
 # Load existing credentials from .env if available
 try:
