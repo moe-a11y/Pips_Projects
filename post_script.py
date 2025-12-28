@@ -302,22 +302,77 @@ def upload_to_instagram(video_path, title, description):
 
 
 def upload_to_facebook(video_path, title, description):
-    """Upload video to Facebook page."""
+    """Upload video to Facebook page as a Reel."""
     if not all([FB_TOKEN, FB_PAGE_ID]):
         raise Exception("Facebook credentials not configured")
 
-    video_file = open(video_path, "rb")
-    fb_url = f"https://graph.facebook.com/v17.0/{FB_PAGE_ID}/videos"
-    res = requests.post(
-        fb_url,
-        data={"title": title, "description": description, "access_token": FB_TOKEN},
-        files={"source": video_file},
+    if not GITHUB_TOKEN:
+        raise Exception("GitHub token required for Facebook Reels (to host video)")
+
+    # Combine title and description for the Reel caption
+    caption = f"{title}\n{description}"
+
+    # 1. Upload video to GitHub to get a publicly accessible URL
+    # Facebook Reels API requires a video_url, similar to Instagram
+    video_url = upload_to_github_raw(video_path)
+
+    # 2. Create Facebook Reel container using the video_reels endpoint
+    create_url = f"https://graph.facebook.com/v18.0/{FB_PAGE_ID}/video_reels"
+    params = {
+        "upload_phase": "start",
+        "access_token": FB_TOKEN,
+    }
+
+    # Start the upload session
+    start_res = requests.post(create_url, params=params)
+    start_data = start_res.json()
+
+    if "video_id" not in start_data:
+        raise Exception(f"FB Reel upload session start failed: {start_data}")
+
+    video_id = start_data["video_id"]
+    upload_url = start_data.get("upload_url")
+    print(f"FB Reel upload session started. Video ID: {video_id}")
+
+    # 3. Upload the video file
+    with open(video_path, "rb") as video_file:
+        video_data = video_file.read()
+
+    # Upload to the provided upload URL
+    upload_headers = {
+        "Authorization": f"OAuth {FB_TOKEN}",
+        "offset": "0",
+        "file_size": str(len(video_data)),
+    }
+
+    upload_res = requests.post(
+        upload_url,
+        headers=upload_headers,
+        data=video_data,
     )
-    res_data = res.json()
-    if "id" in res_data:
-        print(f"Facebook video posted (ID {res_data['id']}).")
+    upload_result = upload_res.json()
+
+    if not upload_result.get("success"):
+        raise Exception(f"FB Reel video upload failed: {upload_result}")
+
+    print(f"FB Reel video uploaded successfully")
+
+    # 4. Finish the upload and publish the Reel
+    finish_params = {
+        "upload_phase": "finish",
+        "video_id": video_id,
+        "title": title,
+        "description": caption,
+        "access_token": FB_TOKEN,
+    }
+
+    finish_res = requests.post(create_url, params=finish_params)
+    finish_data = finish_res.json()
+
+    if finish_data.get("success"):
+        print(f"Facebook Reel posted successfully (Video ID: {video_id}).")
     else:
-        raise Exception(f"FB video upload failed: {res_data}")
+        raise Exception(f"FB Reel publish failed: {finish_data}")
 
 
 def upload_to_tiktok(video_path, description):
