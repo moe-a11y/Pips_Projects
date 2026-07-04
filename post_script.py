@@ -1,4 +1,4 @@
-import base64, glob, json, os, requests, time
+import base64, glob, json, os, requests, sys, time
 from pathlib import Path
 
 from google.oauth2.credentials import Credentials
@@ -223,7 +223,8 @@ def upload_to_youtube(video_path, title, description):
             },
             "status": {
                 "privacyStatus": "public",
-                "madeForKids": True,
+                "madeForKids": False,
+                "selfDeclaredMadeForKids": False,
             },
         },
         media_body=media,
@@ -376,25 +377,79 @@ def upload_to_facebook(video_path, title, description):
 
 
 def upload_to_tiktok(video_path, description):
-    """Upload video to TikTok."""
+    """Upload video to TikTok using the v2 Content Posting API (direct post)."""
     if not TIKTOK_TOKEN:
         raise Exception("TikTok credentials not configured")
 
+    video_size = os.path.getsize(video_path)
+
+    # 1. Initialize the direct-post upload session
     init_res = requests.post(
-        "https://open.tiktokapis.com/v2/post/upload/",
-        headers={"Authorization": f"Bearer {TIKTOK_TOKEN}"},
-        files={"video": open(video_path, "rb")},
-        data={"description": description},
+        "https://open.tiktokapis.com/v2/post/publish/video/init/",
+        headers={
+            "Authorization": f"Bearer {TIKTOK_TOKEN}",
+            "Content-Type": "application/json; charset=UTF-8",
+        },
+        json={
+            "post_info": {
+                "title": description[:2200],
+                "privacy_level": "PUBLIC_TO_EVERYONE",
+            },
+            "source_info": {
+                "source": "FILE_UPLOAD",
+                "video_size": video_size,
+                "chunk_size": video_size,
+                "total_chunk_count": 1,
+            },
+        },
     )
-    if init_res.status_code == 200:
-        print("TikTok upload successful.")
-    else:
-        raise Exception(f"TikTok upload failed: {init_res.text}")
+    init_data = init_res.json()
+    upload_url = init_data.get("data", {}).get("upload_url")
+    if init_res.status_code != 200 or not upload_url:
+        raise Exception(f"TikTok upload init failed: {init_res.text}")
+
+    # 2. Upload the video file in a single chunk
+    with open(video_path, "rb") as f:
+        video_bytes = f.read()
+    upload_res = requests.put(
+        upload_url,
+        headers={
+            "Content-Type": "video/mp4",
+            "Content-Range": f"bytes 0-{video_size - 1}/{video_size}",
+        },
+        data=video_bytes,
+    )
+    if upload_res.status_code not in (200, 201):
+        raise Exception(f"TikTok video upload failed: {upload_res.text}")
+
+    publish_id = init_data.get("data", {}).get("publish_id")
+    print(f"TikTok upload successful (publish ID: {publish_id}).")
+
+
+def get_configured_platforms():
+    """
+    Determine which platforms have credentials configured.
+
+    Returns:
+        dict: platform name -> upload function (called as fn(video_path, title, description))
+    """
+    platforms = {}
+    if all([YT_CLIENT_ID, YT_CLIENT_SECRET, YT_REFRESH_TOKEN]):
+        platforms["youtube"] = upload_to_youtube
+    if all([FB_TOKEN, IG_ID, GITHUB_TOKEN]):
+        platforms["instagram"] = upload_to_instagram
+    if all([FB_TOKEN, FB_PAGE_ID, GITHUB_TOKEN]):
+        platforms["facebook"] = upload_to_facebook
+    if TIKTOK_TOKEN:
+        platforms["tiktok"] = lambda path, title, description: upload_to_tiktok(
+            path, f"{title}\n{description}"
+        )
+    return platforms
 
 
 def main():
     # 1. Find the video file in 'videos' folder
-    video_files = glob.glob("videos/*.*")
+    video_files = sorted(glob.glob("videos/*.*"))
     if not video_files:
         print("No video file found in the videos/ folder. Exiting without posting.")
         return
@@ -443,79 +498,75 @@ def main():
         else:
             print(f"⚠️  No .txt file found either, using default description")
 
+        # Create an entry so per-platform posted state can be tracked across runs
+        video_info_data[video_filename] = {"title": title, "description": description}
+
     print(f"Using title: {title}")
     print(f"Description/Caption: {description}")
 
-    # Track successful uploads
-    upload_success = False
+    # 3. Post to each configured platform, skipping ones already posted on a
+    #    previous (partially failed) run. State lives in video_info.json under
+    #    the "posted" key so a retry never double-posts.
+    platforms = get_configured_platforms()
+    if not platforms:
+        print("✗ No platforms configured. Check your credentials.")
+        sys.exit(1)
 
-    # 3. Post to YouTube
-    try:
-        upload_to_youtube(video_path, title, description)
-        upload_success = True
-        print("YouTube upload succeeded.")
-    except Exception as e:
-        print(f"YouTube upload failed: {e}")
+    posted = video_info_data[video_filename].setdefault("posted", {})
+    failed_platforms = []
 
-    # 4. Post to Instagram
-    try:
-        upload_to_instagram(video_path, title, description)
-        upload_success = True
-        print("Instagram upload succeeded.")
-    except Exception as e:
-        print(f"Instagram upload failed: {e}")
-
-    # 5. Post to Facebook
-    try:
-        upload_to_facebook(video_path, title, description)
-        upload_success = True
-        print("Facebook upload succeeded.")
-    except Exception as e:
-        print(f"Facebook upload failed: {e}")
-
-    # 6. Post to TikTok (optional; ignore failure since it's bonus)
-    tik_tok_token = os.getenv("TIKTOK_ACCESS_TOKEN")
-    if tik_tok_token:
+    for name, upload_fn in platforms.items():
+        if posted.get(name):
+            print(f"↷ Skipping {name}: already posted on a previous run.")
+            continue
         try:
-            upload_to_tiktok(video_path, description)
-            upload_success = True
-            print("TikTok upload succeeded.")
+            upload_fn(video_path, title, description)
+            posted[name] = True
+            save_video_info(video_info_data)  # persist immediately after each success
+            print(f"✓ {name} upload succeeded.")
         except Exception as e:
-            print(f"TikTok upload failed or not configured: {e}")
+            failed_platforms.append(name)
+            print(f"✗ {name} upload failed: {e}")
 
-    # 7. Delete video file and video info after successful upload
-    # This works both locally and in GitHub Actions
-    if upload_success:
-        try:
-            # Delete the local video file from videos/ folder
-            os.remove(video_path)
-            print(f"✓ Successfully deleted video file: {video_path}")
+    # 4. Only clean up once EVERY configured platform has posted. Otherwise keep
+    #    the video and its posted-state so the next run retries just the failures.
+    if failed_platforms:
+        save_video_info(video_info_data)
+        print(
+            f"✗ Failed platforms: {', '.join(failed_platforms)}. "
+            "Video retained for retry; already-posted platforms will be skipped next run."
+        )
+        sys.exit(1)
 
-            # Delete the video info entry from video_info.json
-            delete_video_info_for_video(video_filename)
+    print("✓ All configured platforms posted successfully. Cleaning up...")
+    try:
+        # Delete the local video file from videos/ folder
+        os.remove(video_path)
+        print(f"✓ Successfully deleted video file: {video_path}")
 
-            # Also delete the description .txt file if it exists (legacy support)
-            desc_file = Path(video_path).with_suffix(".txt")
-            if desc_file.exists():
-                os.remove(desc_file)
-                print(f"✓ Successfully deleted description file: {desc_file}")
+        # Delete the video info entry from video_info.json
+        delete_video_info_for_video(video_filename)
 
-            # Delete the video from local instagram_videos folder if it exists
-            instagram_video_path = Path(f"instagram_videos/{video_filename}")
-            if instagram_video_path.exists():
-                os.remove(instagram_video_path)
-                print(
-                    f"✓ Successfully deleted local Instagram video file: {instagram_video_path}"
-                )
+        # Also delete the description .txt file if it exists (legacy support)
+        desc_file = Path(video_path).with_suffix(".txt")
+        if desc_file.exists():
+            os.remove(desc_file)
+            print(f"✓ Successfully deleted description file: {desc_file}")
 
-            # Delete the video from GitHub repository's instagram_videos folder
-            # This is important for GitHub Actions where the video is uploaded to GitHub
-            delete_from_github(video_filename)
+        # Delete the video from local instagram_videos folder if it exists
+        instagram_video_path = Path(f"instagram_videos/{video_filename}")
+        if instagram_video_path.exists():
+            os.remove(instagram_video_path)
+            print(
+                f"✓ Successfully deleted local Instagram video file: {instagram_video_path}"
+            )
 
-        except Exception as e:
-            print(f"✗ Failed to delete video file: {e}")
-    else:
-        print("✗ No successful uploads. Video file retained in folder.")
+        # Delete the video from GitHub repository's instagram_videos folder
+        # This is important for GitHub Actions where the video is uploaded to GitHub
+        delete_from_github(video_filename)
+
+    except Exception as e:
+        print(f"✗ Failed to delete video file: {e}")
 
 
 if __name__ == "__main__":

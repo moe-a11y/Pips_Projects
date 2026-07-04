@@ -1,6 +1,11 @@
 # Environment variables with credentials
 .env
 
+# Google Cloud service account keys — never commit these
+pips-projects-*.json
+*service-account*.json
+gcp_credentials.json
+
 # Python
 __pycache__/
 *.py[cod]

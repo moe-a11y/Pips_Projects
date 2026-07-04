@@ -1,10 +1,13 @@
 name: Post Pip Videos Daily
 on:
   schedule:
- #   - cron: '0 12 * * *'   # 12:00 PM daily
-    - cron: '30 19 * * *'  # 7:30 PM daily
-  # You can also enable manual triggers:
+    - cron: '30 19 * * *'  # 7:30 PM daily (UTC) — content is generated at 12:00 PM
+  # Manual trigger:
   workflow_dispatch:
+
+concurrency:
+  group: pip-content
+  cancel-in-progress: false
 
 jobs:
   postContent:
@@ -23,7 +26,6 @@ jobs:
           pip install -r requirements.txt
       - name: Post video to socials
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           YOUTUBE_API_CLIENT_ID: ${{ secrets.YOUTUBE_API_CLIENT_ID }}
           YOUTUBE_API_CLIENT_SECRET: ${{ secrets.YOUTUBE_API_CLIENT_SECRET }}
           YOUTUBE_API_REFRESH_TOKEN: ${{ secrets.YOUTUBE_API_REFRESH_TOKEN }}
@@ -35,12 +37,14 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
         run: |
           python post_script.py
-      - name: Commit and push video deletion
-        if: success()
+      # Runs even if posting partially failed: post_script.py records which
+      # platforms succeeded in video_info.json so the next run only retries
+      # the failed ones — that state must be committed either way.
+      - name: Commit posting state / video deletion
+        if: always()
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          # Commit deletion of posted videos (already deleted by post_script.py)
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
@@ -50,7 +54,7 @@ jobs:
           git add -A
           # Only commit if there are changes
           if ! git diff --staged --quiet; then
-            git commit -m "Remove posted videos from videos/ and instagram_videos/ [automated]"
+            git commit -m "Update posting state / remove posted videos [automated]"
 
             # Pull any remote changes before pushing to avoid conflicts
             git pull --rebase origin main || echo "No remote changes to pull"
@@ -58,5 +62,5 @@ jobs:
             # Push the changes
             git push
           else
-            echo "No video files to commit (already handled by script)"
+            echo "No changes to commit"
           fi

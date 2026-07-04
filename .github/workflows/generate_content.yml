@@ -1,0 +1,63 @@
+name: Generate Pip Video Daily
+on:
+  schedule:
+    - cron: '0 12 * * *'   # 12:00 PM daily (UTC) — posting runs at 7:30 PM
+  # Manual trigger for testing / regenerating:
+  workflow_dispatch:
+
+concurrency:
+  group: pip-content
+  cancel-in-progress: false
+
+jobs:
+  generateContent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Write Google credentials
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+        run: |
+          echo "$GOOGLE_CREDENTIALS_JSON" > /tmp/gcp_credentials.json
+
+      - name: Generate today's script
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp_credentials.json
+        run: |
+          python generate_script.py
+
+      - name: Generate today's video
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcp_credentials.json
+        run: |
+          python generate_video.py
+
+      - name: Commit generated video and metadata
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+
+          git add videos/ video_info.json content_history.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Generate daily Pip video $(date -u +%F) [automated]"
+            git pull --rebase origin main || echo "No remote changes to pull"
+            git push
+          else
+            echo "Nothing new to commit"
+          fi
