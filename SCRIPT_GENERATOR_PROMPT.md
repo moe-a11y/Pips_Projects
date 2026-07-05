@@ -66,7 +66,7 @@ Respond with **only** a single JSON object, no markdown fences, no commentary, m
 {
   "concept_summary": "One sentence describing today's experiment and its payoff (used for the do-not-repeat log).",
   "title": "Catchy video title, max 70 characters, no hashtags, may include one emoji.",
-  "caption": "Social caption: a 1–2 sentence hook/tease written in a fun voice with 1–3 emojis, then a space, then 5–8 hashtags. Always include #PipsProjects. Mix broad tags (#Satisfying, #CuteAnimals, #ASMR) with specific ones for today's concept. Max 500 characters total.",
+  "caption": "Social caption written in PIP'S OWN VOICE (first person, as if Pip is writing his lab journal). Exact format: 'Experiment Log #<whimsical 3–4 digit number>: <1–2 sentence excited hook/tease from Pip's perspective, with 1–3 emojis> Pip-pip!' then a blank line, then 5–8 hashtags. Example: 'Experiment Log #3491: My first summer experiment is here! What happens when a frosty treat meets the Mystical Press? ☀️ The ending looks so gooey! ✨ Pip-pip!' Always include #PipsProjects. Mix broad tags (#Satisfying, #CuteAnimals, #ASMR) with specific ones for today's concept. Max 500 characters total.",
   "video_prompt": "The complete production-ready prompt for the AI video model: one continuous 8-second vertical 9:16 shot. Must restate the full visual style from section 4, describe Pip per section 1, the workshop per section 2, the machine per section 3, the object, the exact action beat-by-beat with rough timing (0-2s hook, 2-6s action, 6-8s payoff), Pip's otter vocalizations in quotes (never spoken words), how Pip mechanically operates the machine (lever/crank/buttons), and the full sound design. 120–220 words."
 }
 ```
