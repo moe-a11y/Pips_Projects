@@ -353,10 +353,13 @@ def upload_to_facebook(video_path, title, description):
 
     print(f"FB Reel video uploaded successfully")
 
-    # 3. Finish the upload and publish the Reel
+    # 3. Finish the upload and publish the Reel.
+    # video_state=PUBLISHED is required — without it the reel is only
+    # uploaded as an invisible draft, even though the API reports success.
     finish_params = {
         "upload_phase": "finish",
         "video_id": video_id,
+        "video_state": "PUBLISHED",
         "title": title,
         "description": caption,
         "access_token": FB_TOKEN,
@@ -365,10 +368,32 @@ def upload_to_facebook(video_path, title, description):
     finish_res = requests.post(create_url, params=finish_params)
     finish_data = finish_res.json()
 
-    if finish_data.get("success"):
-        print(f"Facebook Reel posted successfully (Video ID: {video_id}).")
-    else:
+    if not finish_data.get("success"):
         raise Exception(f"FB Reel publish failed: {finish_data}")
+
+    # 4. Verify the reel actually goes live (processing can take a minute)
+    for attempt in range(18):
+        time.sleep(10)
+        status_res = requests.get(
+            f"https://graph.facebook.com/v18.0/{video_id}",
+            params={"fields": "status", "access_token": FB_TOKEN},
+        )
+        status = status_res.json().get("status", {})
+        video_status = status.get("video_status")
+        publish_status = status.get("publishing_phase", {}).get("status")
+        print(
+            f"FB Reel processing status (attempt {attempt + 1}/18): "
+            f"video_status={video_status}, publishing={publish_status}"
+        )
+        if video_status == "error":
+            raise Exception(f"FB Reel processing failed: {status}")
+        if video_status == "ready" or publish_status == "complete":
+            print(f"Facebook Reel posted successfully (Video ID: {video_id}).")
+            return
+    print(
+        f"⚠️  FB Reel still processing after 3 minutes (Video ID: {video_id}); "
+        "treating as posted — check the page if it doesn't appear."
+    )
 
 
 def upload_to_tiktok(video_path, description):
