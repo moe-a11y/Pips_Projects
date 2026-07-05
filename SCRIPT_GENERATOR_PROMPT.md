@@ -13,9 +13,9 @@ Today's date: **{{TODAY}}**
 - **Body**: soft warm-brown fur with a felted, claymation-like texture; lighter tan muzzle, chest and belly; short rounded limbs; thick tapered tail; small ears; black whiskers; round dark chocolate-brown eyes; small dark brown nose.
 - **Outfit (always worn, never changes)**: round **teal goggles** with a dark strap, worn over his eyes; a **mustard-yellow utility vest** with two front flap pockets, a tiny zipper pull, and a **small red heart** stitched on the left chest.
 - **Personality**: boundlessly curious, easily delighted, a little clumsy, never mean or scared for long. He treats every experiment like the greatest event in history. When surprised, his eyes go wide and his paws fly up. He giggles.
-- **Voice**: small, squeaky, warm and enthusiastic — like an excitable kid scientist. He speaks in short bursts. Recurring lines you may (but don't have to) use: *"Time to press!"*, *"Ooooh what's THIS gonna do?"*, *"For science!"*, *"That's going in the notebook."*
+- **Voice — Pip is ALWAYS non-verbal**: he never speaks words in any language. He communicates entirely through cute otter sounds: his signature *"Pip-pip!"* squeak, plus chirps, trills, excited squeals, curious "mrrp?" noises, gasps, and giggles. His expressions and body language carry the emotion (wide eyes, paws to cheeks, happy bounce).
 
-**Hard rules**: Pip is the ONLY character. No humans, no other animals, no crowds. He never gets hurt. Never remove or alter his goggles, vest, or heart patch.
+**Hard rules**: Pip is the ONLY character. No humans, no other animals, no crowds. He never gets hurt. Never remove or alter his goggles, vest, or heart patch. He NEVER speaks words — otter noises only. He NEVER holds a magic wand, stick, or handheld magical object: he operates his machines exclusively through their built-in levers, cranks, buttons, and dials.
 
 ## 2. The Setting (never deviate)
 
@@ -27,6 +27,11 @@ Pip's flagship tool is **The Mystical Press**: a chunky, toy-like **plum-purple 
 
 The press is the star, but Pip may instead use another workshop machine, always rendered in the **same plum-purple + glowing-amber toy aesthetic**: a vacuum chamber (glass dome), a shrink/grow ray, a freeze chamber, a giant horseshoe magnet, a mixer/whisk contraption, a slicer, a magnifier beam, a bubble machine, etc. Think of the popular "satisfying experiment" genre (hydraulic press channels, vacuum chamber tests, freeze-dry, magnet crushes) — but magical, cute, and G-rated.
 
+**Machine physics rules (strict)**:
+- **The Mystical Press PRESSES — it never transmutes.** An object placed in the press must still be that same object (or its squished/altered remains) when the press lifts. It can flatten, deform, crack, crumble, shatter into sparkly pieces, ooze, stretch, wobble back into shape, glow, erupt with a cool magical reaction, or produce a surprising *physical* result — but it must NEVER disappear and become a different object. (A pressed crayon can become a rainbow puddle; it cannot become a butterfly.)
+- Genuine transformations (one object becoming another) are allowed **only** with machines whose whole premise is transformation (the shrink/grow ray, etc.) — never the press.
+- **Every machine is operated mechanically**: Pip pulls the crank lever, pushes big chunky buttons, or turns dials. Machines never activate by magic gesture, and Pip never uses a wand.
+
 ## 4. Visual Style (must appear in every video prompt)
 
 Soft 3D claymation / felted-clay render, rounded toy-like shapes, matte textures, warm amber lighting, gentle purple magical particle wisps, shallow cozy depth, **vertical 9:16**, smooth slow camera (static or gentle slow push-in — never shaky, never fast cuts). Everything looks huggable.
@@ -37,9 +42,9 @@ Soft 3D claymation / felted-clay render, rounded toy-like shapes, matte textures
 - **One simple action** with a clear beginning → payoff. (Object goes in machine → machine works → surprising/delightful result.)
 - **Hook in the first second**: the object and machine must both be visible immediately; something should already be glowing, wobbling, or charging as the video begins.
 - **Payoff in the last 2 seconds** that lands: a transformation, a comedic surprise, a shower of sparkles, an absurdly wrong-but-adorable result. Prefer endings that **loop well** back into the opening frame.
-- **Dialogue**: at most 1–2 short lines from Pip (the model lip-syncs audio). Front-load a reaction word.
+- **Vocalizations, not dialogue**: Pip never speaks words. Give him 1–3 cute otter sounds at emotional beats (e.g. an eager *"Pip-pip!"* at the start, a gasp or squeal at the payoff). Write them in quotes as sounds.
 - **Sound design is half the video**: always specify it — hydraulic hisses, satisfying squishes/crackles/pops (ASMR-style), magical chimes, a soft musical sting on the payoff, Pip's giggle.
-- **Never include**: on-screen text or captions, readable labels, logos, brand names, more than one character, small intricate objects requiring fine detail, anything scary, gross, or violent. Objects can squish, transform, multiply, or turn to sparkles — never break in a distressing way.
+- **Never include**: on-screen text or captions, readable labels, logos, brand names, more than one character, spoken words from Pip, wands or handheld magical objects, small intricate objects requiring fine detail, anything scary, gross, or violent. Objects can squish, crumble, react, or sparkle — never break in a distressing way.
 
 ## 6. Choosing Today's Idea
 
@@ -51,7 +56,7 @@ Pick ONE experiment concept for today. Before deciding:
 
 {{RECENT_CONCEPTS}}
 
-Good concept shapes: *ordinary object + machine = magical wrong-genre result* (pressing a lemon → tiny glowing sun), *seasonal object + satisfying transformation*, *machine misbehaves adorably*, *object multiplies/comes alive in a cute way*.
+Good concept shapes: *ordinary object + press = surprising physical result* (pressing a geode → it cracks open into a glittering crystal fountain; pressing a marshmallow → it puffs into an enormous fluffy cloud of itself), *seasonal object + satisfying squish/crumble/reaction*, *machine misbehaves adorably*, *transformation machine turns an object into something unexpected* (non-press machines only — see machine physics rules).
 
 ## 7. Output Format (strict)
 
@@ -62,7 +67,7 @@ Respond with **only** a single JSON object, no markdown fences, no commentary, m
   "concept_summary": "One sentence describing today's experiment and its payoff (used for the do-not-repeat log).",
   "title": "Catchy video title, max 70 characters, no hashtags, may include one emoji.",
   "caption": "Social caption: a 1–2 sentence hook/tease written in a fun voice with 1–3 emojis, then a space, then 5–8 hashtags. Always include #PipsProjects. Mix broad tags (#Satisfying, #CuteAnimals, #ASMR) with specific ones for today's concept. Max 500 characters total.",
-  "video_prompt": "The complete production-ready prompt for the AI video model: one continuous 8-second vertical 9:16 shot. Must restate the full visual style from section 4, describe Pip per section 1, the workshop per section 2, the machine per section 3, the object, the exact action beat-by-beat with rough timing (0-2s hook, 2-6s action, 6-8s payoff), Pip's dialogue lines in quotes, and the full sound design. 120–220 words."
+  "video_prompt": "The complete production-ready prompt for the AI video model: one continuous 8-second vertical 9:16 shot. Must restate the full visual style from section 4, describe Pip per section 1, the workshop per section 2, the machine per section 3, the object, the exact action beat-by-beat with rough timing (0-2s hook, 2-6s action, 6-8s payoff), Pip's otter vocalizations in quotes (never spoken words), how Pip mechanically operates the machine (lever/crank/buttons), and the full sound design. 120–220 words."
 }
 ```
 
