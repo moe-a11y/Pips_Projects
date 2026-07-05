@@ -307,17 +307,12 @@ def upload_to_facebook(video_path, title, description):
     if not all([FB_TOKEN, FB_PAGE_ID]):
         raise Exception("Facebook credentials not configured")
 
-    if not GITHUB_TOKEN:
-        raise Exception("GitHub token required for Facebook Reels (to host video)")
-
     # Combine title and description for the Reel caption
     caption = f"{title}\n{description}"
 
-    # 1. Upload video to GitHub to get a publicly accessible URL
-    # Facebook Reels API requires a video_url, similar to Instagram
-    video_url = upload_to_github_raw(video_path)
-
-    # 2. Create Facebook Reel container using the video_reels endpoint
+    # 1. Create Facebook Reel container using the video_reels endpoint
+    # (unlike Instagram, this API accepts a direct file upload — no public
+    # hosting URL needed)
     create_url = f"https://graph.facebook.com/v18.0/{FB_PAGE_ID}/video_reels"
     params = {
         "upload_phase": "start",
@@ -335,7 +330,7 @@ def upload_to_facebook(video_path, title, description):
     upload_url = start_data.get("upload_url")
     print(f"FB Reel upload session started. Video ID: {video_id}")
 
-    # 3. Upload the video file
+    # 2. Upload the video file
     with open(video_path, "rb") as video_file:
         video_data = video_file.read()
 
@@ -358,7 +353,7 @@ def upload_to_facebook(video_path, title, description):
 
     print(f"FB Reel video uploaded successfully")
 
-    # 4. Finish the upload and publish the Reel
+    # 3. Finish the upload and publish the Reel
     finish_params = {
         "upload_phase": "finish",
         "video_id": video_id,
@@ -438,7 +433,7 @@ def get_configured_platforms():
         platforms["youtube"] = upload_to_youtube
     if all([FB_TOKEN, IG_ID, GITHUB_TOKEN]):
         platforms["instagram"] = upload_to_instagram
-    if all([FB_TOKEN, FB_PAGE_ID, GITHUB_TOKEN]):
+    if all([FB_TOKEN, FB_PAGE_ID]):
         platforms["facebook"] = upload_to_facebook
     if TIKTOK_TOKEN:
         platforms["tiktok"] = lambda path, title, description: upload_to_tiktok(

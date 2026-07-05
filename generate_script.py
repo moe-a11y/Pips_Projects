@@ -158,7 +158,9 @@ def main():
     print(f"  Concept: {script['concept_summary']}")
     print(f"  Title:   {script['title']}")
 
-    # Log the concept so future runs never repeat it
+    # Log the concept so future runs never repeat it. Replace any existing
+    # entry for today so a same-day rerun doesn't create duplicates.
+    history = [h for h in history if h.get("date") != today]
     history.append(
         {
             "date": today,
