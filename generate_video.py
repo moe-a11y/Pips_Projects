@@ -36,7 +36,7 @@ VIDEO_INFO_FILE = Path("video_info.json")
 RESOURCES_DIR = Path("resources")
 VIDEOS_DIR = Path("videos")
 
-VEO_MODEL = os.getenv("VEO_MODEL", "veo-3.1-generate-preview")
+VEO_MODEL = os.getenv("VEO_MODEL", "veo-3.1-generate-001")
 # Veo accepts at most 3 asset reference images
 PREFERRED_REFERENCES = ["1.png", "2.png", "3.png"]
 MAX_REFERENCES = 3

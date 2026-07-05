@@ -64,7 +64,7 @@ cp .env.example .env   # then fill in credentials
 3. Locally: point `GOOGLE_APPLICATION_CREDENTIALS` in `.env` at the key file (never commit it — it's gitignored).
 4. GitHub Actions: paste the entire JSON key into a repo secret named **`GOOGLE_CREDENTIALS_JSON`**.
 
-Models default to `gemini-2.5-pro` (script) and `veo-3.1-generate-preview` (video); override via `GEMINI_MODEL` / `VEO_MODEL` env vars if needed.
+Models default to `gemini-2.5-pro` (script) and `veo-3.1-generate-001` (video); override via `GEMINI_MODEL` / `VEO_MODEL` env vars if needed.
 
 ### 3. YouTube
 
