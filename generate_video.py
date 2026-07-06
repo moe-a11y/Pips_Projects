@@ -37,6 +37,15 @@ RESOURCES_DIR = Path("resources")
 VIDEOS_DIR = Path("videos")
 
 VEO_MODEL = os.getenv("VEO_MODEL", "veo-3.1-generate-001")
+# Belt-and-suspenders quality guard sent straight to Veo, independent of
+# whatever the script model wrote in the prompt
+NEGATIVE_PROMPT = os.getenv(
+    "VEO_NEGATIVE_PROMPT",
+    "spoken words, dialogue, talking, narration, character saying 'gasp' or "
+    "'squeak' as words, on-screen text, captions, subtitles, watermark, "
+    "extra characters, humans, objects floating or levitating, object lifted "
+    "or picked up by the press, photorealistic style, scary, violent",
+)
 # Veo accepts at most 3 asset reference images
 PREFERRED_REFERENCES = ["1.png", "2.png", "3.png"]
 MAX_REFERENCES = 3
@@ -139,6 +148,7 @@ def main():
         "aspect_ratio": "9:16",
         "duration_seconds": 8,
         "number_of_videos": 1,
+        "negative_prompt": NEGATIVE_PROMPT,
     }
     if references:
         config_kwargs["reference_images"] = references
