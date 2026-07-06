@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pip's Projects — TikTok Authorization</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: -apple-system, system-ui, sans-serif; max-width: 640px;
+           margin: 4rem auto; padding: 0 1rem; color: #333; }
+    code { background: #f4f4f4; padding: 0.5rem 0.75rem; border-radius: 6px;
+           display: block; word-break: break-all; margin: 1rem 0; font-size: 1rem; }
+    .ok { color: #1a7f37; } .err { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <h1>🦦 Pip's Projects</h1>
+  <div id="result"></div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const error = params.get("error");
+    const el = document.getElementById("result");
+    if (code) {
+      el.innerHTML = "<p class='ok'><strong>✅ Authorization successful!</strong></p>" +
+        "<p>Copy this authorization code (needed to mint the refresh token):</p>" +
+        "<code>" + code.replace(/[<>&]/g, "") + "</code>" +
+        "<p>Return to the setup process and paste it there.</p>";
+    } else if (error) {
+      el.innerHTML = "<p class='err'><strong>❌ Authorization failed:</strong> " +
+        error.replace(/[<>&]/g, "") + "</p><p>Close this tab and try again.</p>";
+    } else {
+      el.innerHTML = "<p>This is the OAuth callback page for the Pip's Projects " +
+        "publishing tool. Nothing to see here — check out our daily videos instead!</p>";
+    }
+  </script>
+</body>
+</html>
