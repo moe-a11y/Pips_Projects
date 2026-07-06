@@ -35,6 +35,9 @@ PENDING_SCRIPT_FILE = Path("pending_script.json")
 VIDEO_INFO_FILE = Path("video_info.json")
 RESOURCES_DIR = Path("resources")
 VIDEOS_DIR = Path("videos")
+# Fixed character/setting/style preamble prepended to every Veo prompt so the
+# core look never depends on how the script model paraphrased it that day
+STYLE_PREFIX_FILE = Path("VIDEO_STYLE_PREFIX.md")
 
 VEO_MODEL = os.getenv("VEO_MODEL", "veo-3.1-generate-001")
 # Belt-and-suspenders quality guard sent straight to Veo, independent of
@@ -141,8 +144,12 @@ def main():
     else:
         print("⚠️  No reference images found in resources/ — generating without them.")
 
+    video_prompt = script["video_prompt"]
+    if STYLE_PREFIX_FILE.exists():
+        video_prompt = f"{STYLE_PREFIX_FILE.read_text().strip()} {video_prompt}"
+
     print(f"Generating video with {VEO_MODEL}...")
-    print(f"  Prompt: {script['video_prompt'][:120]}...")
+    print(f"  Scene: {script['video_prompt'][:120]}...")
 
     config_kwargs = {
         "aspect_ratio": "9:16",
@@ -155,7 +162,7 @@ def main():
 
     operation = client.models.generate_videos(
         model=VEO_MODEL,
-        prompt=script["video_prompt"],
+        prompt=video_prompt,
         config=types.GenerateVideosConfig(**config_kwargs),
     )
 

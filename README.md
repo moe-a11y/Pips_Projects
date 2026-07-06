@@ -34,6 +34,7 @@ Both workflows can also be triggered manually from the Actions tab.
 
 ```
 SCRIPT_GENERATOR_PROMPT.md   # The creative brief sent to Gemini every day
+VIDEO_STYLE_PREFIX.md        # Fixed style/character preamble prepended to every Veo prompt
 generate_script.py           # Step 1: script + caption generation
 generate_video.py            # Step 2: Veo video generation
 post_script.py               # Step 3: multi-platform posting + cleanup
