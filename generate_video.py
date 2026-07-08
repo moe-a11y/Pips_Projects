@@ -46,11 +46,18 @@ NEGATIVE_PROMPT = os.getenv(
     "VEO_NEGATIVE_PROMPT",
     "spoken words, dialogue, talking, narration, character saying 'gasp' or "
     "'squeak' as words, on-screen text, captions, subtitles, watermark, "
-    "extra characters, humans, objects floating or levitating, object lifted "
-    "or picked up by the press, photorealistic style, scary, violent",
+    "extra characters, second creature, companion animal, sidekick, small "
+    "creature beside the otter, living toy, plush toy moving on its own, "
+    "humans, character walking toward the machine, extra levers, duplicate "
+    "levers, lever on top of the machine, objects floating or levitating, "
+    "object lifted or picked up by the press, photorealistic style, scary, "
+    "violent",
 )
-# Veo accepts at most 3 asset reference images
-PREFERRED_REFERENCES = ["1.png", "2.png", "3.png"]
+# Veo accepts at most 3 asset reference images.
+# NOTE: 2.png (the 16-pose expression sheet) is deliberately NOT sent to Veo —
+# feeding a grid of many small Pips invites the model to hallucinate extra
+# small creatures into the scene. Only clean single-subject images go in.
+PREFERRED_REFERENCES = ["1.png", "3.png"]
 MAX_REFERENCES = 3
 POLL_INTERVAL_SECONDS = 20
 TIMEOUT_SECONDS = 20 * 60
