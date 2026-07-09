@@ -46,7 +46,8 @@ resources/                   # Reference images (1=Pip+press scene, 2=character
                              #   sheet, 3=press prop) — fed to Veo for consistency
 videos/                      # Generated videos awaiting posting
 instagram_videos/            # Temporary public hosting for Meta ingestion
-.github/workflows/           # The two daily cron workflows
+posted_archive/              # Posted videos kept ~30 days as a safety copy
+.github/workflows/           # Daily generation + posting crons, monthly purge
 ```
 
 ## Setup
@@ -123,4 +124,5 @@ You can also drop a manually-made video into `videos/` with an entry in `video_i
 - Meta tokens expire: long-lived Page tokens last ~60 days unless generated via a System User.
 - YouTube refresh tokens can be revoked if unused — re-run `get_youtube_token.py` locally and update the secret.
 - If Instagram processing times out, verify the repo is public and the video is <100 MB (GitHub raw limit).
-- Repo size: hosting videos via git commits leaves blobs in history permanently. If the repo grows too large, periodically rewrite history or switch hosting to a GCS bucket.
+- Repo size: posted videos are moved to `posted_archive/` and kept ~30 days. On the 1st of each month, `purge_history.yml` deletes older archives and rewrites git history (git-filter-repo + force push) so purged video blobs are permanently removed — the repo never grows unboundedly.
+- **After each monthly purge, refresh any local clone** (history was rewritten): `git fetch origin && git reset --hard origin/main`. Never `git push` from a stale clone after a purge — it would resurrect the old history.

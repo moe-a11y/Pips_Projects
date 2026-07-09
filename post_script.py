@@ -566,9 +566,13 @@ def main():
 
     print("✓ All configured platforms posted successfully. Cleaning up...")
     try:
-        # Delete the local video file from videos/ folder
-        os.remove(video_path)
-        print(f"✓ Successfully deleted video file: {video_path}")
+        # Move the posted video to posted_archive/ as a ~1-month safety copy.
+        # A monthly workflow prunes old archives and rewrites git history so
+        # purged videos are permanently deleted from the repo.
+        archive_path = Path("posted_archive") / Path(video_path).name
+        archive_path.parent.mkdir(exist_ok=True)
+        Path(video_path).rename(archive_path)
+        print(f"✓ Archived posted video: {video_path} -> {archive_path}")
 
         # Delete the video info entry from video_info.json
         delete_video_info_for_video(video_filename)

@@ -1,0 +1,76 @@
+name: Purge Old Videos From History
+on:
+  schedule:
+    - cron: '0 3 1 * *'   # 03:00 UTC on the 1st of every month
+  workflow_dispatch:
+
+# Serialize with generation/posting so we never rewrite history mid-run
+concurrency:
+  group: pip-content
+  cancel-in-progress: false
+
+jobs:
+  purgeHistory:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install git-filter-repo
+        run: pip install git-filter-repo
+
+      - name: Prune archives older than 30 days, purge history, force push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+          # 1. Delete archived videos older than 30 days (date parsed from
+          #    the pip_YYYY-MM-DD filename; git commit date as fallback)
+          cutoff=$(date -u -d '30 days ago' +%s)
+          if [ -d posted_archive ]; then
+            for f in posted_archive/*; do
+              [ -f "$f" ] || continue
+              d=$(basename "$f" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1 || true)
+              if [ -n "$d" ]; then
+                ts=$(date -u -d "$d" +%s)
+              else
+                ts=$(git log -1 --format=%ct -- "$f" 2>/dev/null || date -u +%s)
+              fi
+              if [ "$ts" -lt "$cutoff" ]; then
+                echo "Pruning old archive: $f"
+                rm -f "$f"
+              fi
+            done
+          fi
+
+          # 2. Snapshot the media files that must survive the rewrite
+          mkdir -p /tmp/media_keep
+          for dir in videos instagram_videos posted_archive; do
+            [ -d "$dir" ] && cp -R "$dir" /tmp/media_keep/ || true
+          done
+
+          # 3. Rewrite history: permanently drop every blob ever committed
+          #    under the media folders
+          python3 -m git_filter_repo --force --invert-paths \
+            --path videos --path instagram_videos --path posted_archive
+
+          # 4. Restore the still-active media on top of the clean history
+          for dir in videos instagram_videos posted_archive; do
+            [ -d "/tmp/media_keep/$dir" ] && cp -R "/tmp/media_keep/$dir" . || true
+          done
+          git add -A
+          if ! git diff --staged --quiet; then
+            git commit -m "Restore active media after monthly history purge [automated]"
+          fi
+
+          # 5. Force push the rewritten history (filter-repo removed origin)
+          git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
+          git push --force origin main
+          echo "History purged. Repo pack size now:"
+          git count-objects -vH | grep size-pack
