@@ -20,7 +20,6 @@ import os
 import socketserver
 import sys
 import webbrowser
-from threading import Thread
 from urllib.parse import parse_qs, urlencode
 
 import requests

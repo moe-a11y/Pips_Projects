@@ -467,9 +467,15 @@ def get_configured_platforms():
     return platforms
 
 
+VIDEO_EXTENSIONS = (".mp4", ".mov", ".m4v", ".avi", ".webm", ".mkv")
+
+
 def main():
-    # 1. Find the video file in 'videos' folder
-    video_files = sorted(glob.glob("videos/*.*"))
+    # 1. Find the oldest video file in 'videos' folder (ignore companion
+    #    .txt files and anything else that isn't a video)
+    video_files = sorted(
+        f for f in glob.glob("videos/*.*") if f.lower().endswith(VIDEO_EXTENSIONS)
+    )
     if not video_files:
         print("No video file found in the videos/ folder. Exiting without posting.")
         return
