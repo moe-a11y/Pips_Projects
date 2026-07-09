@@ -50,8 +50,10 @@ NEGATIVE_PROMPT = os.getenv(
     "creature beside the otter, living toy, plush toy moving on its own, "
     "humans, character walking toward the machine, extra levers, duplicate "
     "levers, lever on top of the machine, objects floating or levitating, "
-    "object lifted or picked up by the press, photorealistic style, scary, "
-    "violent",
+    "object lifted or picked up by the press, object already crushed or "
+    "half-pressed at the start, press platen already lowered at the start, "
+    "object hidden inside or behind the machine, pressing twice, second "
+    "press cycle, photorealistic style, scary, violent",
 )
 # Veo accepts at most 3 asset reference images.
 # NOTE: 2.png (the 16-pose expression sheet) is deliberately NOT sent to Veo —

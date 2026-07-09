@@ -6,6 +6,6 @@ Pip is completely non-verbal: he never speaks words in any language. The only sy
 
 Pip is the ONLY living being in the entire video — no other characters, creatures, animals, companions, or sidekicks of any size, anywhere in frame, at any moment. Every object in the scene is completely inanimate: a toy, plush, or figurine never moves, stands, walks, or acts on its own. If a machine has a lever, it has exactly ONE lever, mounted on its side. No on-screen text of any kind.
 
-The video opens mid-action: everything is already staged in frame one — the object already in place in the machine, Pip already standing at the controls, paw on the lever or button, bouncing with excitement. Pip never walks in, approaches the machine, or sets anything up during the video.
+The video opens at the instant just BEFORE the machine acts. In frame one: the object rests whole, intact, undamaged, and FULLY VISIBLE in its place in the machine — nothing touching it, nothing covering or hiding any part of it, the machine not yet moving — while the machine glows and hums in anticipation and Pip already stands at the controls, paw on the lever or button, bouncing with excitement. Pip never walks in, approaches, or sets anything up — but the machine must not have started yet: everything the machine does to the object happens visibly on screen, from completely intact to final result, never hidden behind or inside the machine.
 
 The scene:
