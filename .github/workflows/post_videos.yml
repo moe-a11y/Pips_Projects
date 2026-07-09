@@ -54,7 +54,7 @@ jobs:
           git add -A
           # Only commit if there are changes
           if ! git diff --staged --quiet; then
-            git commit -m "Update posting state / remove posted videos [automated]"
+            git commit -m "Update posting state / archive posted videos [automated]"
 
             # Pull any remote changes before pushing to avoid conflicts
             git pull --rebase origin main || echo "No remote changes to pull"

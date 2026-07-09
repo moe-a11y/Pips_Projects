@@ -596,7 +596,7 @@ def main():
         delete_from_github(video_filename)
 
     except Exception as e:
-        print(f"✗ Failed to delete video file: {e}")
+        print(f"✗ Post-upload archive/cleanup failed: {e}")
 
 
 if __name__ == "__main__":

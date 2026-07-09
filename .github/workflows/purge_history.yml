@@ -30,6 +30,11 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
+          # Log the pre-purge HEAD: if a purge ever goes wrong, this SHA can
+          # recover the old history (git fetch origin <sha>) while GitHub
+          # still retains the unreachable objects (~2 weeks)
+          echo "Pre-purge HEAD: $(git rev-parse HEAD)"
+
           # 1. Delete archived videos older than 30 days (date parsed from
           #    the pip_YYYY-MM-DD filename; git commit date as fallback)
           cutoff=$(date -u -d '30 days ago' +%s)
@@ -37,9 +42,13 @@ jobs:
             for f in posted_archive/*; do
               [ -f "$f" ] || continue
               d=$(basename "$f" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1 || true)
+              # Malformed dates fall back to the file's git commit date;
+              # last resort "now" means the file is kept, never wrongly purged
+              ts=""
               if [ -n "$d" ]; then
-                ts=$(date -u -d "$d" +%s)
-              else
+                ts=$(date -u -d "$d" +%s 2>/dev/null || true)
+              fi
+              if [ -z "$ts" ]; then
                 ts=$(git log -1 --format=%ct -- "$f" 2>/dev/null || date -u +%s)
               fi
               if [ "$ts" -lt "$cutoff" ]; then
@@ -69,7 +78,9 @@ jobs:
             git commit -m "Restore active media after monthly history purge [automated]"
           fi
 
-          # 5. Force push the rewritten history (filter-repo removed origin)
+          # 5. Force push the rewritten history (filter-repo normally removes
+          #    origin, but don't rely on it — e.g. on a no-op rewrite)
+          git remote remove origin 2>/dev/null || true
           git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
           git push --force origin main
           echo "History purged. Repo pack size now:"
