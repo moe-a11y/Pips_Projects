@@ -151,6 +151,11 @@ def main():
         print(f"❌ Model response missing fields: {missing}\n{script}")
         sys.exit(1)
 
+    # Strip search-grounding citation markers (e.g. "[1, 2]") that Gemini
+    # sometimes leaves in the text — they must never reach a public caption
+    for key in required:
+        script[key] = re.sub(r"\s*\[\d+(?:,\s*\d+)*\]", "", script[key]).strip()
+
     script["date"] = today
 
     PENDING_SCRIPT_FILE.write_text(json.dumps(script, indent=2) + "\n")
