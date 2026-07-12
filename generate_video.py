@@ -44,8 +44,11 @@ VEO_MODEL = os.getenv("VEO_MODEL", "veo-3.1-generate-001")
 # whatever the script model wrote in the prompt
 NEGATIVE_PROMPT = os.getenv(
     "VEO_NEGATIVE_PROMPT",
-    "spoken words, dialogue, talking, narration, character saying 'gasp' or "
-    "'squeak' as words, on-screen text, captions, subtitles, watermark, "
+    "spoken words, dialogue, talking, narration, character pronouncing the "
+    "words 'gasp', 'wow', 'yay', or 'squeak', otter without goggles, goggles "
+    "removed or pushed up on forehead, machine spraying or emitting confetti, "
+    "sprinkles or particles from the machine itself, "
+    "on-screen text, captions, subtitles, watermark, "
     "extra characters, second creature, companion animal, sidekick, small "
     "creature beside the otter, living toy, plush toy moving on its own, "
     "humans, character walking toward the machine, extra levers, duplicate "
@@ -158,7 +161,9 @@ def main():
         video_prompt = f"{STYLE_PREFIX_FILE.read_text().strip()} {video_prompt}"
 
     print(f"Generating video with {VEO_MODEL}...")
-    print(f"  Scene: {script['video_prompt'][:120]}...")
+    # Log the full scene prompt — essential evidence when investigating why
+    # a generated video misbehaved (was it the script's text or the model?)
+    print(f"--- Scene prompt ---\n{script['video_prompt']}\n--------------------")
 
     config_kwargs = {
         "aspect_ratio": "9:16",
