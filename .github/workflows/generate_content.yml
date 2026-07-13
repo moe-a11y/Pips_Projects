@@ -45,6 +45,10 @@ jobs:
         run: |
           python generate_video.py
 
+      - name: Update website episode log
+        run: |
+          python update_episodes_page.py
+
       - name: Commit generated video and metadata
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -53,7 +57,7 @@ jobs:
           git config user.email "actions@github.com"
           git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
 
-          git add videos/ video_info.json content_history.json
+          git add videos/ video_info.json content_history.json docs/episodes.html
           if ! git diff --staged --quiet; then
             git commit -m "Generate daily Pip video $(date -u +%F) [automated]"
             git pull --rebase origin main || echo "No remote changes to pull"
