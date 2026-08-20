@@ -1,7 +1,11 @@
 name: Purge Old Videos From History
 on:
-  schedule:
-    - cron: '0 3 1 * *'   # 03:00 UTC on the 1st of every month
+  # PAUSED 2026-08-20: project on hold, no automated runs.
+  # To resume: uncomment the schedule block below AND run
+  #   gh workflow enable "<workflow name>"
+  # (the workflow is also disabled on GitHub's Actions tab).
+  # schedule:
+  #   - cron: '0 3 1 * *'   # 03:00 UTC on the 1st of every month
   workflow_dispatch:
 
 # Serialize with generation/posting so we never rewrite history mid-run

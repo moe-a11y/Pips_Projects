@@ -1,7 +1,11 @@
 name: Generate Pip Video Daily
 on:
-  schedule:
-    - cron: '0 12 * * *'   # 12:00 PM daily (UTC) — posting runs at 7:30 PM
+  # PAUSED 2026-08-20: project on hold, no automated runs.
+  # To resume: uncomment the schedule block below AND run
+  #   gh workflow enable "<workflow name>"
+  # (the workflow is also disabled on GitHub's Actions tab).
+  # schedule:
+  #   - cron: '0 12 * * *'   # 12:00 PM daily (UTC) — posting runs at 7:30 PM
   # Manual trigger for testing / regenerating:
   workflow_dispatch:
 
